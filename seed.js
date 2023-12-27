@@ -1,23 +1,22 @@
 const allCategories = require("./data/categoryData");
 const allQuotes = require("./data/quoteData");
 const allUsers = require("./data/userdata");
+const mongoLink = require("./testMongoDB");
 
 const MongoClient = require("mongodb").MongoClient;
 
-async function seedDB() {
-  const uri = "mongodb+srv://admin:Password@cluster0.35psafi.mongodb.net/Node-API?retryWrites=true&w=majority";
-  const client = new MongoClient(uri);
+async function seedDB(mongoLink, allUsers, allCategories, allQuotes) {
+  const client = new MongoClient(mongoLink);
   try {
     await client.connect();
-    console.log("connected");
     const mngdb = client.db("Node-API");
-    mngdb.dropDatabase();
-    mngdb.createCollection("Quotes");
-    mngdb.createCollection("Users");
-    mngdb.createCollection("Categories");
+    await mngdb.dropDatabase();
+    await mngdb.createCollection("Quotes");
+    await mngdb.createCollection("Users");
+    await mngdb.createCollection("Categories");
 
-    mngdb.collection("Users").insertMany(allUsers);
-    mngdb.collection("Categories").insertMany(allCategories);
+    await mngdb.collection("Users").insertMany(allUsers);
+    await mngdb.collection("Categories").insertMany(allCategories);
     const catsForSeed = await mngdb.collection("Categories").find({}).toArray();
     const usersForSeed = await mngdb.collection("Users").find({}).toArray();
 
@@ -35,8 +34,13 @@ async function seedDB() {
         }
       }
     }
-    mngdb.collection("Quotes").insertMany(allQuotes);
-  } catch {}
+    await mngdb.collection("Quotes").insertMany(allQuotes);
+  } catch {
+  } finally {
+    await client.close();
+  }
 }
 
-seedDB();
+seedDB(mongoLink, allUsers, allCategories, allQuotes);
+
+module.exports = seedDB;
