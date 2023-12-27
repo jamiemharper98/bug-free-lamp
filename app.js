@@ -27,9 +27,28 @@ app.get("/api/users/:username", async (req, res) => {
   const client = new MongoClient(mongoLink);
   try {
     await client.connect();
-    const user = await client.db("Node-API").collection("Users").find({ username: username }).toArray();
-    if (!user.length) res.status(404).send({ msg: "Username not found!" });
-    res.status(200).send({ user: user[0] });
+    const user = await client.db("Node-API").collection("Users").findOne({ username: username });
+    if (!user) res.status(404).send({ msg: "Username not found!" });
+    res.status(200).send({ user });
+  } catch (error) {
+  } finally {
+    await client.close();
+  }
+});
+
+app.post("/api/users", async (req, res) => {
+  const userInfo = req.body;
+  ["username", "firstname", "lastname", "email"].forEach((key) => {
+    if (!Object.keys(userInfo).includes(key)) {
+      res.status(400).send({ msg: "Bad request!" });
+    }
+  });
+  const client = new MongoClient(mongoLink);
+  try {
+    await client.connect();
+    await client.db("Node-API").collection("Users").insertOne(userInfo);
+    const newUser = await client.db("Node-API").collection("Users").findOne({ username: userInfo.username });
+    res.status(201).send({ user: newUser });
   } catch (error) {
   } finally {
     await client.close();

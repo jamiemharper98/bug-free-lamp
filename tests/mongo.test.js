@@ -5,11 +5,7 @@ const allQuotes = require("../data/quoteData");
 const allUsers = require("../data/userdata");
 const mongoLink = require("../testMongoDB");
 const seed = require("../seed");
-const ENV = process.env.NODE_ENV || "development";
 
-require("dotenv").config({
-  path: `${__dirname}/../.env.${ENV}`,
-});
 beforeEach(async () => {
   await seed(mongoLink, allUsers, allCategories, allQuotes);
 });
@@ -55,6 +51,85 @@ describe("USERS", () => {
         .expect(404)
         .then(({ body }) => {
           expect(body.msg).toBe("Username not found!");
+        });
+    });
+  });
+  describe("POST User", () => {
+    test("add a user to the db", () => {
+      const toSend = {
+        username: "testuser",
+        firstname: "test",
+        lastname: "user",
+        email: "test@user.com",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(201)
+        .then(({ body: { user } }) => {
+          expect(user).toMatchObject({
+            _id: expect.any(String),
+            username: "testuser",
+            firstname: "test",
+            lastname: "user",
+            email: "test@user.com",
+          });
+        });
+    });
+    test("should fail if missing a key for db - username", () => {
+      const toSend = {
+        firstname: "test",
+        lastname: "user",
+        email: "test@user.com",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request!");
+        });
+    });
+    test("should fail if missing a key for db - email", () => {
+      const toSend = {
+        username: "testuser",
+        firstname: "test",
+        lastname: "user",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request!");
+        });
+    });
+    test("should fail if missing a key for db - firstname", () => {
+      const toSend = {
+        username: "testuser",
+        lastname: "user",
+        email: "test@user.com",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request!");
+        });
+    });
+    test("should fail if missing a key for db - lastname", () => {
+      const toSend = {
+        username: "testuser",
+        firstname: "test",
+        email: "test@user.com",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("Bad request!");
         });
     });
   });
