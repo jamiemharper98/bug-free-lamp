@@ -1,15 +1,15 @@
 const allCategories = require("./data/categoryData");
 const allQuotes = require("./data/quoteData");
 const allUsers = require("./data/userdata");
-const mongoLink = require("./testMongoDB");
+const { mongoLink, mongoDbName } = require("./testMongoDB");
 
 const MongoClient = require("mongodb").MongoClient;
 
-async function seedDB(mongoLink, allUsers, allCategories, allQuotes) {
+async function seedDB(mongoLink,mongoDbName, allUsers, allCategories, allQuotes) {
   const client = new MongoClient(mongoLink);
   try {
     await client.connect();
-    const mngdb = client.db("Node-API");
+    const mngdb = client.db(mongoDbName);
     await mngdb.dropDatabase();
     await mngdb.createCollection("Quotes");
     await mngdb.createCollection("Users");
@@ -41,6 +41,6 @@ async function seedDB(mongoLink, allUsers, allCategories, allQuotes) {
   }
 }
 
-seedDB(mongoLink, allUsers, allCategories, allQuotes);
+seedDB(mongoLink,mongoDbName, allUsers, allCategories, allQuotes);
 
 module.exports = seedDB;

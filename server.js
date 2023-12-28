@@ -1,11 +1,11 @@
-
-const app = require('./app')
+const app = require("./app");
 const mongoose = require("mongoose");
+const { mongoLink } = require("./testMongoDB");
 
 //routes
 
 mongoose
-  .connect("mongodb+srv://admin:Password@cluster0.35psafi.mongodb.net/Node-API?retryWrites=true&w=majority")
+  .connect(mongoLink)
   .then(() => {
     console.log("connected to mongo db");
     app.listen(3000, () => {

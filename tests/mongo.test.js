@@ -3,11 +3,15 @@ const app = require("../app");
 const allCategories = require("../data/categoryData");
 const allQuotes = require("../data/quoteData");
 const allUsers = require("../data/userdata");
-const mongoLink = require("../testMongoDB");
+const { mongoLink, mongoDbName } = require("../testMongoDB");
 const seed = require("../seed");
 
 beforeEach(async () => {
-  await seed(mongoLink, allUsers, allCategories, allQuotes);
+  await seed(mongoLink, mongoDbName, allUsers, allCategories, allQuotes);
+});
+
+afterAll(async () => {
+  await seed(mongoLink, mongoDbName, allUsers, allCategories, allQuotes);
 });
 
 describe("USERS", () => {
@@ -130,6 +134,21 @@ describe("USERS", () => {
         .expect(400)
         .then(({ body }) => {
           expect(body.msg).toBe("Bad request!");
+        });
+    });
+    test("should fail if username is already in db", () => {
+      const toSend = {
+        username: "ASKJHD",
+        firstname: "test",
+        lastname: "user",
+        email: "test@user.com",
+      };
+      return request(app)
+        .post("/api/users")
+        .send(toSend)
+        .expect(400)
+        .then(({ body }) => {
+          expect(body.msg).toBe("User already exists!");
         });
     });
   });
